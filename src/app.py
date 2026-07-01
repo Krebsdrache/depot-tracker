@@ -8,6 +8,8 @@ import altair as alt
 import pandas as pd
 import streamlit as st
 
+from core import registry as registry_mod
+
 import bilanz as bilanz_mod
 import binance_data as binance_data_mod
 import fee_rates as fee_rates_mod
@@ -2253,6 +2255,38 @@ def _render_price_zones_tab(result: PortfolioResult) -> None:
     _render_price_zones(tickers, result)
 
 
+def _render_depot_selector() -> str:
+    """Zeigt aktive Depots; ab 2 Depots einen Umschalter. Gibt das aktive Depot zurück."""
+    enabled = registry_mod.enabled_providers()
+    if not enabled:
+        st.caption("Kein Depot konfiguriert.")
+        return registry_mod.GESAMT_ID
+
+    if len(enabled) == 1:
+        st.caption(f"Aktiv: {enabled[0].info().display_name}")
+        return enabled[0].info().id
+
+    options = [registry_mod.GESAMT_ID] + [p.info().id for p in enabled]
+    labels = {registry_mod.GESAMT_ID: "Gesamt"}
+    labels.update({p.info().id: p.info().display_name for p in enabled})
+
+    saved = get_ui_pref("active_depot", registry_mod.GESAMT_ID)
+    if saved not in options:
+        saved = registry_mod.GESAMT_ID
+
+    selected = st.radio(
+        "Depot",
+        options=options,
+        format_func=lambda key: labels[key],
+        index=options.index(saved),
+        key="active_depot",
+        label_visibility="collapsed",
+    )
+    if selected != saved:
+        save_ui_pref("active_depot", selected)
+    return selected
+
+
 def main() -> None:
     st.set_page_config(page_title="Depot-Tracker", page_icon="📈", layout="wide")
     _init_session_state()
@@ -2292,6 +2326,10 @@ def main() -> None:
             for display_path, path, label in persisted_data_files():
                 mark = "✓" if path.exists() else "·"
                 st.markdown(f"{mark} `{display_path}` — {label}")
+
+        st.divider()
+        st.subheader("Depots")
+        _render_depot_selector()
 
         st.divider()
         st.subheader("Navigation")
