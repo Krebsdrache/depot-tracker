@@ -1,0 +1,35 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+env/
+
+# Sensible Dateien (API-Keys, Zugangsdaten)
+.env
+.env.*
+*.env
+secrets/
+credentials.json
+*.pem
+*.key
+
+# Lokale Depot-Daten (später: Exporte, Cache, Datenbank)
+data/*
+!data/.gitkeep
+
+# IDE & OS
+.idea/
+.vscode/
+*.swp
+.DS_Store
+Thumbs.db
+
+# Streamlit
+.streamlit/secrets.toml

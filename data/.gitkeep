@@ -1,0 +1,2 @@
+# Platzhalter, damit der data/-Ordner im Repo erhalten bleibt.
+# Der eigentliche Inhalt (CSVs, Caches, Snapshots) wird per .gitignore ausgeschlossen.
