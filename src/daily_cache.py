@@ -8,8 +8,9 @@ from datetime import date, datetime, timezone
 from pathlib import Path
 
 from binance_data import PortfolioResult, Position
+from core.storage import binance_dir
 
-CACHE_DIR = Path(__file__).resolve().parent.parent / "data" / "tages_cache"
+CACHE_DIR = binance_dir() / "tages_cache"
 
 
 def _today_key() -> str:

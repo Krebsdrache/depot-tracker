@@ -18,9 +18,12 @@ from binance_data import (
     create_authenticated_client,
 )
 
+from core.storage import binance_dir
+
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
-ZUFLUSS_CSV = DATA_DIR / "zufluesse.csv"
-ZUFLUSS_META = DATA_DIR / "zufluesse_meta.json"
+_DEPOT_DIR = binance_dir()
+ZUFLUSS_CSV = _DEPOT_DIR / "zufluesse.csv"
+ZUFLUSS_META = _DEPOT_DIR / "zufluesse_meta.json"
 ZUFLUSS_COLUMNS = ["typ", "coin", "datum", "menge", "wert_eur", "richtung"]
 
 TYP_FIAT = "fiat_einzahlung"
@@ -81,7 +84,7 @@ def _load_seen_ids() -> set[str]:
 
 
 def _save_seen_ids(ids: set[str]) -> None:
-    DATA_DIR.mkdir(parents=True, exist_ok=True)
+    _DEPOT_DIR.mkdir(parents=True, exist_ok=True)
     ZUFLUSS_META.write_text(json.dumps({"ids": sorted(ids)}, indent=2), encoding="utf-8")
 
 

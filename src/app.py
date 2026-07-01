@@ -2289,12 +2289,9 @@ def main() -> None:
                 "Alle Depot-Daten liegen im Ordner **`data/`** auf deiner Festplatte. "
                 "Beim Schließen der App geht **nichts verloren** – nur der laufende Server stoppt."
             )
-            data_dir = binance_data_mod.DATA_DIR
-            for rel_path, label in persisted_data_files():
-                path = data_dir / rel_path.rstrip("/")
-                exists = path.exists()
-                mark = "✓" if exists else "·"
-                st.markdown(f"{mark} `{rel_path}` — {label}")
+            for display_path, path, label in persisted_data_files():
+                mark = "✓" if path.exists() else "·"
+                st.markdown(f"{mark} `{display_path}` — {label}")
 
         st.divider()
         st.subheader("Navigation")

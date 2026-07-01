@@ -78,16 +78,29 @@ def save_ui_pref(key: str, value: str) -> None:
     SETTINGS_FILE.write_text(json.dumps(settings, indent=2), encoding="utf-8")
 
 
-def persisted_data_files() -> list[tuple[str, str]]:
-    """Übersicht der lokal gespeicherten Dateien (Pfad relativ zu data/)."""
-    return [
-        ("kaeufe.csv", "Käufe (Trade-Historie)"),
-        ("verkaeufe.csv", "Verkäufe"),
-        ("zufluesse.csv", "Ein- und Auszahlungen"),
-        ("preis_zonen.json", "Preis-Zonen (USD-Schwellen)"),
-        ("settings.json", "App-Einstellungen"),
-        ("sync_meta.json", "Letzter Binance-Sync"),
-        ("fee_rate_cache.json", "Gebühren-Kurs-Cache"),
-        ("portfolio_price_cache.json", "Depot-Historie Kurs-Cache"),
-        ("tages_cache/", "Tages-Depot-Snapshots"),
+def persisted_data_files() -> list[tuple[str, Path, str]]:
+    """Übersicht der lokal gespeicherten Dateien (Anzeige-Pfad, absoluter Pfad, Label)."""
+    from core import storage
+
+    root = storage.data_root()
+    binance = storage.binance_dir()
+    items: list[tuple[Path, str]] = [
+        (binance / "kaeufe.csv", "Käufe (Trade-Historie)"),
+        (binance / "verkaeufe.csv", "Verkäufe"),
+        (binance / "zufluesse.csv", "Ein- und Auszahlungen"),
+        (binance / "sync_meta.json", "Letzter Binance-Sync"),
+        (binance / "tages_cache", "Tages-Depot-Snapshots"),
+        (root / "preis_zonen.json", "Preis-Zonen (USD-Schwellen)"),
+        (root / "settings.json", "App-Einstellungen"),
+        (root / "fee_rate_cache.json", "Gebühren-Kurs-Cache"),
+        (root / "portfolio_price_cache.json", "Depot-Historie Kurs-Cache"),
     ]
+
+    result: list[tuple[str, Path, str]] = []
+    for path, label in items:
+        try:
+            display = str(path.relative_to(root))
+        except ValueError:
+            display = path.name
+        result.append((display.replace("\\", "/"), path, label))
+    return result

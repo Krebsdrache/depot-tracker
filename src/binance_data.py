@@ -21,12 +21,15 @@ from fee_rates import (
 )
 from fifo import fifo_avg_entry_from_local
 
+from core.storage import binance_dir
+
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 DATA_DIR = PROJECT_ROOT / "data"
-KAUF_CSV = DATA_DIR / "kaeufe.csv"
-KAUF_META = DATA_DIR / "kaeufe_meta.json"
-VERKAUF_CSV = DATA_DIR / "verkaeufe.csv"
-VERKAUF_META = DATA_DIR / "verkaeufe_meta.json"
+_DEPOT_DIR = binance_dir()
+KAUF_CSV = _DEPOT_DIR / "kaeufe.csv"
+KAUF_META = _DEPOT_DIR / "kaeufe_meta.json"
+VERKAUF_CSV = _DEPOT_DIR / "verkaeufe.csv"
+VERKAUF_META = _DEPOT_DIR / "verkaeufe_meta.json"
 KAUF_COLUMNS = [
     "trade_id",
     "coin",
@@ -886,7 +889,7 @@ def _run_full_trade_sync(
                     sell_seen.add(trade_id)
                     new_sell_rows.append({col: record[col] for col in VERKAUF_COLUMNS})
 
-    DATA_DIR.mkdir(parents=True, exist_ok=True)
+    _DEPOT_DIR.mkdir(parents=True, exist_ok=True)
 
     if add_new_rows and new_buy_rows:
         new_df = pd.DataFrame(new_buy_rows, columns=KAUF_COLUMNS)

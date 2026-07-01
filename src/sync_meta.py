@@ -4,9 +4,10 @@ from __future__ import annotations
 
 import json
 from datetime import datetime, timezone
-from pathlib import Path
 
-SYNC_META = Path(__file__).resolve().parent.parent / "data" / "sync_meta.json"
+from core.storage import binance_dir
+
+SYNC_META = binance_dir() / "sync_meta.json"
 
 
 def _read_meta() -> dict[str, str]:
@@ -27,7 +28,7 @@ def get_last_trade_sync() -> datetime | None:
     # Fallback: CSV existiert schon, aber Meta-Datei noch nicht
     kaeufe = SYNC_META.parent / "kaeufe.csv"
     if kaeufe.exists():
-        mtime = datetime.fromtimestamp(kaeuft.stat().st_mtime, tz=timezone.utc)
+        mtime = datetime.fromtimestamp(kaeufe.stat().st_mtime, tz=timezone.utc)
         return mtime
     return None
 
