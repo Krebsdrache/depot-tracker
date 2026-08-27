@@ -1,0 +1,27 @@
+{
+  "snapshot": "data/tages_cache/YYYY-MM-DD.json",
+  "opening_balances": [
+    {
+      "coin": "BTC",
+      "trade_id": -100001,
+      "datum": "2024-01-01T00:00:00+00:00",
+      "kaufpreis_eur": 50000.0,
+      "preis_quelle": "eroeffnung"
+    }
+  ],
+  "card_deposit_fixes": [
+    {
+      "coin_label": "EUR→EXAMPLE",
+      "typ": "fiat_karte"
+    }
+  ],
+  "balance_corrections": [
+    {
+      "coin": "EXAMPLE",
+      "trade_id": -200001,
+      "datum": "2026-01-01T12:00:00+00:00",
+      "verkaufspreis_eur": 1.0,
+      "preis_quelle": "saldo_korrektur"
+    }
+  ]
+}

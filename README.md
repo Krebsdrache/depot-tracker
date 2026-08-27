@@ -25,14 +25,17 @@ BINANCE_API_KEY=dein_api_key
 BINANCE_API_SECRET=dein_api_secret
 ```
 
-Die Datei wird nicht ins Git übernommen (siehe `.gitignore`).
+Die Datei wird nicht ins Git übernommen (siehe `.gitignore`). **Keys nur rotieren**, falls du die `.env` jemals per Chat oder E-Mail verschickt hast — im Repository liegen keine Keys.
+
+## Vor dem Push (öffentliches Repo)
+
+Kurz **`git status`** prüfen: `.env` und `data/` dürfen nicht staged sein (stehen in `.gitignore`).
 
 ## App starten
 
 ### Einfach (empfohlen)
 
-**Doppelklick** auf `start.bat` im Projektordner  
-(`C:\Users\chbst\Desktop\depot-tracker\start.bat`)
+**Doppelklick** auf `start.bat` im Projektordner (nach `cd depot-tracker`).
 
 - Schwarzes Fenster **offen lassen** (sonst ist die App wieder weg)
 - Browser öffnet sich unter **http://localhost:8501**
@@ -43,7 +46,7 @@ Die Datei wird nicht ins Git übernommen (siehe `.gitignore`).
 ### Manuell (Terminal)
 
 ```powershell
-cd C:\Users\chbst\Desktop\depot-tracker
+cd depot-tracker
 .\.venv\Scripts\python.exe -m streamlit run src\app.py
 ```
 

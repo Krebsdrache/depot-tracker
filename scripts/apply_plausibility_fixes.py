@@ -1,4 +1,8 @@
-"""Einmalige Datenkorrekturen für Plausibilitäts-Check (lokal ausführen)."""
+"""Einmalige Datenkorrekturen für den Plausibilitäts-Check (nur lokal ausführen).
+
+Konfiguration in ``plausibility_fixes.local.json`` (nicht versioniert).
+Vorlage: ``plausibility_fixes.example.json``.
+"""
 
 from __future__ import annotations
 
@@ -9,12 +13,13 @@ from pathlib import Path
 import pandas as pd
 
 ROOT = Path(__file__).resolve().parent.parent
+CONFIG_PATH = Path(__file__).resolve().parent / "plausibility_fixes.local.json"
+EXAMPLE_PATH = Path(__file__).resolve().parent / "plausibility_fixes.example.json"
+
 sys.path.insert(0, str(ROOT / "src"))
 
 from binance_data import (  # noqa: E402
-    KAUF_COLUMNS,
     KAUF_CSV,
-    VERKAUF_COLUMNS,
     VERKAUF_CSV,
     load_purchases_csv,
     load_sells_csv,
@@ -24,11 +29,32 @@ from deposit_trades import merge_purchases_with_deposits  # noqa: E402
 from inflows import ZUFLUSS_CSV, load_zufluesse_csv  # noqa: E402
 from steuer import berechne_haltefristen, plausibilitaet_pro_coin, _apply_fifo  # noqa: E402
 
-SNAPSHOT = ROOT / "data" / "tages_cache" / "2026-06-28.json"
+
+def _load_config() -> dict:
+    if not CONFIG_PATH.exists():
+        print(
+            f"Keine lokale Konfiguration: {CONFIG_PATH.name}\n"
+            f"Kopiere {EXAMPLE_PATH.name} nach {CONFIG_PATH.name} "
+            "und passe die Werte an (Datei wird nicht ins Git übernommen)."
+        )
+        sys.exit(1)
+    return json.loads(CONFIG_PATH.read_text(encoding="utf-8"))
 
 
-def _balances() -> dict[str, float]:
-    snap = json.loads(SNAPSHOT.read_text(encoding="utf-8"))
+def _snapshot_path(config: dict) -> Path:
+    rel = str(config.get("snapshot", "")).strip()
+    if not rel:
+        print("Konfiguration: Feld 'snapshot' fehlt.")
+        sys.exit(1)
+    path = ROOT / rel
+    if not path.exists():
+        print(f"Snapshot nicht gefunden: {path}")
+        sys.exit(1)
+    return path
+
+
+def _balances(snapshot: Path) -> dict[str, float]:
+    snap = json.loads(snapshot.read_text(encoding="utf-8"))
     return {p["coin"]: float(p["quantity"]) for p in snap["positions"]}
 
 
@@ -44,28 +70,24 @@ def _fifo_open(coin: str) -> float:
     return sum(float(lot["menge"]) for lot in lots)
 
 
-def add_btc_opening() -> None:
-    """Eröffnungsbestand vor erstem CSV-Kauf (Dez. 2024 Verkäufe ohne Käufe)."""
-    balance = _balances().get("BTC", 0.0)
-    open_before = _fifo_open("BTC")
-    menge = balance - open_before
-    if menge <= 1e-10:
-        print("BTC: kein Eröffnungsbestand nötig.")
-        return
-
-    df = pd.read_csv(KAUF_CSV)
-    if (df["preis_quelle"].astype(str) == "eroeffnung").any():
-        print("BTC: Eröffnungsbestand existiert bereits.")
-        return
-
-    row = {
-        "trade_id": -100_001,
-        "coin": "BTC",
-        "datum": "2024-12-03T00:00:00+00:00",
+def _trade_row(
+    *,
+    trade_id: int,
+    coin: str,
+    datum: str,
+    menge: float,
+    price_eur: float,
+    price_column: str,
+    preis_quelle: str,
+) -> dict[str, object]:
+    return {
+        "trade_id": trade_id,
+        "coin": coin,
+        "datum": datum,
         "menge": round(menge, 8),
-        "kaufpreis_eur": 96000.0,
+        price_column: price_eur,
         "preis_geschaetzt": 1,
-        "preis_quelle": "eroeffnung",
+        "preis_quelle": preis_quelle,
         "commission": 0.0,
         "commission_asset": "",
         "gebuehr_eur": 0.0,
@@ -73,66 +95,86 @@ def add_btc_opening() -> None:
         "gebuehr_geschaetzt": 0,
         "gebuehr_quelle": "",
     }
-    df = pd.concat([df, pd.DataFrame([row])], ignore_index=True)
-    df.sort_values(["coin", "datum"], inplace=True)
-    df.to_csv(KAUF_CSV, index=False)
-    print(f"BTC: Eröffnungsbestand +{menge:.8f} BTC @ 96000 EUR (geschätzt).")
 
 
-def fix_sei_zufluss() -> None:
-    """Kartenkauf: menge = Crypto-Menge (30 EUR → ~65,68 SEI)."""
-    df = load_zufluesse_csv()
-    mask = (df["typ"] == "fiat_karte") & (df["coin"].astype(str) == "EUR→SEI")
-    if not mask.any():
-        print("SEI: kein Kartenkauf in zufluesse.csv.")
-        return
+def apply_opening_balances(config: dict, balances: dict[str, float]) -> None:
+    for entry in config.get("opening_balances", []):
+        coin = str(entry["coin"])
+        preis_quelle = str(entry.get("preis_quelle", "eroeffnung"))
+        balance = balances.get(coin, 0.0)
+        open_before = _fifo_open(coin)
+        menge = balance - open_before
+        if menge <= 1e-10:
+            print(f"{coin}: kein Eröffnungsbestand nötig.")
+            continue
 
-    balance = _balances().get("SEI", 0.0)
-    wert = float(df.loc[mask, "wert_eur"].iloc[0])
-    df.loc[mask, "menge"] = balance
-    df.to_csv(ZUFLUSS_CSV, index=False)
-    print(f"SEI: zufluesse.csv menge -> {balance:.8f} (Kartenkauf {wert:.0f} EUR).")
+        df = pd.read_csv(KAUF_CSV)
+        if (df["preis_quelle"].astype(str) == preis_quelle).any():
+            print(f"{coin}: Eröffnungsbestand existiert bereits.")
+            continue
+
+        row = _trade_row(
+            trade_id=int(entry["trade_id"]),
+            coin=coin,
+            datum=str(entry["datum"]),
+            menge=menge,
+            price_eur=float(entry["kaufpreis_eur"]),
+            price_column="kaufpreis_eur",
+            preis_quelle=preis_quelle,
+        )
+        df = pd.concat([df, pd.DataFrame([row])], ignore_index=True)
+        df.sort_values(["coin", "datum"], inplace=True)
+        df.to_csv(KAUF_CSV, index=False)
+        print(f"{coin}: Eröffnungsbestand +{menge:.8f} @ {entry['kaufpreis_eur']} EUR.")
 
 
-def add_saldo_korrektur_sells() -> None:
-    """
-    Wenn FIFO > Bestand und Binance keine weiteren Spot-Verkäufe liefert:
-    synthetischer Abgang (Convert/interne Bewegung).
-    """
+def apply_card_deposit_fixes(config: dict, balances: dict[str, float]) -> None:
+    for entry in config.get("card_deposit_fixes", []):
+        coin_label = str(entry["coin_label"])
+        typ = str(entry.get("typ", "fiat_karte"))
+        df = load_zufluesse_csv()
+        mask = (df["typ"] == typ) & (df["coin"].astype(str) == coin_label)
+        if not mask.any():
+            print(f"{coin_label}: kein passender Eintrag in zufluesse.csv.")
+            continue
+
+        target_coin = coin_label.split("→", 1)[-1].strip()
+        balance = balances.get(target_coin, 0.0)
+        wert = float(df.loc[mask, "wert_eur"].iloc[0])
+        df.loc[mask, "menge"] = balance
+        df.to_csv(ZUFLUSS_CSV, index=False)
+        print(f"{target_coin}: zufluesse.csv menge -> {balance:.8f} ({wert:.0f} EUR).")
+
+
+def apply_balance_corrections(config: dict, balances: dict[str, float]) -> None:
     df = pd.read_csv(VERKAUF_CSV)
-    balances = _balances()
-    corrections = []
+    corrections: list[dict[str, object]] = []
 
-    for coin, trade_id, price in (
-        ("ADA", -200_001, 0.85),
-        ("ETH", -200_002, 3500.0),
-    ):
+    for entry in config.get("balance_corrections", []):
+        coin = str(entry["coin"])
+        trade_id = int(entry["trade_id"])
         if (df["trade_id"].astype(int) == trade_id).any():
             continue
+
         balance = balances.get(coin, 0.0)
         open_qty = _fifo_open(coin)
         excess = open_qty - balance
         if excess <= 1e-6:
             print(f"{coin}: keine Saldo-Korrektur nötig.")
             continue
+
         corrections.append(
-            {
-                "trade_id": trade_id,
-                "coin": coin,
-                "datum": "2026-06-28T12:00:00+00:00",
-                "menge": round(excess, 8),
-                "verkaufspreis_eur": price,
-                "preis_geschaetzt": 1,
-                "preis_quelle": "saldo_korrektur",
-                "commission": 0.0,
-                "commission_asset": "",
-                "gebuehr_eur": 0.0,
-                "gebuehr_kurs_eur": float("nan"),
-                "gebuehr_geschaetzt": 0,
-                "gebuehr_quelle": "",
-            }
+            _trade_row(
+                trade_id=trade_id,
+                coin=coin,
+                datum=str(entry["datum"]),
+                menge=excess,
+                price_eur=float(entry["verkaufspreis_eur"]),
+                price_column="verkaufspreis_eur",
+                preis_quelle=str(entry.get("preis_quelle", "saldo_korrektur")),
+            )
         )
-        print(f"{coin}: Saldo-Korrektur-Verkauf {excess:.8f} (Convert/intern, nicht in Spot-API).")
+        print(f"{coin}: Saldo-Korrektur-Verkauf {excess:.8f}.")
 
     if not corrections:
         return
@@ -141,8 +183,7 @@ def add_saldo_korrektur_sells() -> None:
     df.to_csv(VERKAUF_CSV, index=False)
 
 
-def report() -> None:
-    balances = _balances()
+def report(balances: dict[str, float]) -> None:
     purchases = merge_purchases_with_deposits(load_purchases_csv())
     sells = load_sells_csv(with_withdrawals=True)
     tranches = berechne_haltefristen(purchases, _sells_by_coin_from_csv(sells))
@@ -156,10 +197,13 @@ def report() -> None:
 
 
 def main() -> None:
-    add_btc_opening()
-    fix_sei_zufluss()
-    add_saldo_korrektur_sells()
-    report()
+    config = _load_config()
+    snapshot = _snapshot_path(config)
+    balances = _balances(snapshot)
+    apply_opening_balances(config, balances)
+    apply_card_deposit_fixes(config, balances)
+    apply_balance_corrections(config, balances)
+    report(balances)
 
 
 if __name__ == "__main__":

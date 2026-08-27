@@ -33,3 +33,6 @@ Thumbs.db
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Lokale Wartungs-Konfiguration (persönliche Depot-Korrekturen)
+scripts/*.local.json
