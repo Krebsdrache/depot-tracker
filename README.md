@@ -14,15 +14,11 @@ Lokales **Streamlit-Dashboard** zur Analyse eines **Binance Spot-Depots** — nu
 
 ## Screenshots
 
-Ordner `docs/` für App-Ansichten vorgesehen:
+| Depot-Übersicht | Depot-Entwicklung | Steuer-Haltefrist |
+|-----------------|-------------------|-------------------|
+| ![Depot-Übersicht](docs/depot.png) | ![Depot-Entwicklung](docs/entwicklung.png) | ![Steuer-Haltefrist](docs/steuer.png) |
 
-| Ansicht | Datei |
-|---------|--------|
-| Depot-Übersicht | `docs/depot.png` |
-| Depot-Entwicklung | `docs/entwicklung.png` |
-| Steuer-Haltefrist | `docs/steuer.png` |
-
-Nach dem Hinzufügen der PNGs im README einbinden, z. B. `![Depot-Übersicht](docs/depot.png)`.
+*(Demo-Daten, keine echten Kontostände.)*
 
 ## Technischer Aufbau
 
@@ -112,7 +108,7 @@ Alle Historie liegt lokal auf der Festplatte — beim Schließen der App bleibt 
 | `kaeufe.csv` / `verkaeufe.csv` | Trade-Historie |
 | `zufluesse.csv` | Ein- und Auszahlungen (Bank, Karte, Krypto) |
 | `settings.json` | App-Einstellungen (Kurs-Modus, UI) |
-| `preis_zonen.json` | Preis-Zonen-Schwellen |
+| `preis_zonen.json` | Preis-Zonen-Schwellen (lokal, siehe Hinweise) |
 | `fee_rate_cache.json` | Cache historischer Kurse (Gebühren) |
 | `portfolio_price_cache.json` | Cache Tageskurse (Depot-Entwicklung) |
 | `tages_cache/` | Tages-Snapshots Bestand + Kurse |
@@ -121,7 +117,7 @@ Alle Historie liegt lokal auf der Festplatte — beim Schließen der App bleibt 
 
 ## Sidebar: Kurs-Modus
 
-- **Feste Daten** — kein Auto-Reload (schnell zum Entwickeln)
+- **Feste Daten** — Snapshot wird wiederverwendet, kein automatischer API-Abruf
 - **Live (1×/Tag)** — Kurse beim ersten Start des Tages von Binance, danach Tages-Cache
 
 ## Tests
@@ -136,3 +132,4 @@ Alle Historie liegt lokal auf der Festplatte — beim Schließen der App bleibt 
 - Nur **Binance Spot**; Earn, Staking, Futures etc. sind nicht enthalten.
 - Steuer-Auswertung ist eine Orientierung, kein Steuerberater-Ersatz.
 - Einstand bei externen Wallet-Einzahlungen: Kurs zum Deposit-Zeitpunkt aus dem Sync (geschätzt, wenn kein EUR-Paar).
+- **Preis-Zonen (optional):** Eigene Schwellenwerte in `data/preis_zonen.json`. Vorlage: `config/preis_zonen.example.json` kopieren und anpassen. Die Datei bleibt lokal und wird nicht ins Repository übernommen.

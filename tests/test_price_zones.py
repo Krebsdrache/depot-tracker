@@ -13,7 +13,7 @@ import price_zones  # noqa: E402
 
 class TestPriceZones(unittest.TestCase):
     def test_closest_zone_picks_nearest_threshold(self):
-        thresholds = [106192.8, 95356.8, 81270.0, 70434.0, 65016.0, 54180.0]
+        thresholds = [100000.0, 90000.0, 80000.0, 70000.0, 65000.0, 50000.0]
         self.assertEqual(price_zones.closest_zone_index(90000.0, thresholds), 1)
         self.assertEqual(price_zones.closest_zone_index(88000.0, thresholds), 2)
 
@@ -55,7 +55,7 @@ class TestPriceZones(unittest.TestCase):
                 {
                     "name": "Kat",
                     "header_color": "#ccc",
-                    "coins": [{"symbol": "BTC", "thresholds": [106192.8, 54180.0]}],
+                    "coins": [{"symbol": "BTC", "thresholds": [100000.0, 50000.0]}],
                 }
             ],
         }

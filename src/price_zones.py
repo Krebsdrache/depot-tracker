@@ -12,8 +12,13 @@ import binance_data
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 ZONES_JSON = PROJECT_ROOT / "data" / "preis_zonen.json"
+ZONES_EXAMPLE = PROJECT_ROOT / "config" / "preis_zonen.example.json"
 
 DisplayCurrency = Literal["EUR", "USD"]
+
+
+class PriceZoneConfigMissing(FileNotFoundError):
+    """Keine lokale ``preis_zonen.json`` — absichtlich nicht im Repository."""
 
 DIRECT_EUR_SOURCES = {"direkt (EUR-Paar)"}
 DIRECT_USD_SOURCES = {
@@ -44,8 +49,18 @@ class PriceZoneTable:
     coin_states: dict[str, CoinZoneState]
 
 
+def has_price_zone_config(path: Path | None = None) -> bool:
+    """True, wenn eine lokale Konfigurationsdatei existiert."""
+    return (path or ZONES_JSON).is_file()
+
+
 def load_price_zone_config(path: Path | None = None) -> dict:
     config_path = path or ZONES_JSON
+    if not config_path.is_file():
+        raise PriceZoneConfigMissing(
+            f"Keine Preis-Zonen-Konfiguration unter {config_path}. "
+            f"Vorlage: {ZONES_EXAMPLE.name} nach data/preis_zonen.json kopieren."
+        )
     return json.loads(config_path.read_text(encoding="utf-8"))
 
 

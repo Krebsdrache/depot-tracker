@@ -1,0 +1,33 @@
+{
+  "currency": "EUR",
+  "threshold_currency": "USD",
+  "exchange_rate_note": "Beispiel-Konfiguration (fiktive Schwellenwerte)",
+  "zones": [
+    {"id": 1, "color": "#c6efce", "label": "Zone 1 — Beispiel"},
+    {"id": 2, "color": "#ffeb9c", "label": "Zone 2 — Beispiel"},
+    {"id": 3, "color": "#ffc7ce", "label": "Zone 3 — Beispiel"}
+  ],
+  "categories": [
+    {
+      "name": "Kategorie 1: Beispiel (80 %)",
+      "header_color": "#92d050",
+      "coins": [
+        {"symbol": "BTC", "thresholds": [100000, 90000, 80000, 70000]}
+      ]
+    },
+    {
+      "name": "Kategorie 2: Beispiel (15 %)",
+      "header_color": "#ffff00",
+      "coins": [
+        {"symbol": "ETH", "thresholds": [4000, 3500, 3000, 2500]}
+      ]
+    },
+    {
+      "name": "Kategorie 3: Beispiel (5 %)",
+      "header_color": "#ffc000",
+      "coins": [
+        {"symbol": "SOL", "thresholds": [200, 150, 100, 80]}
+      ]
+    }
+  ]
+}

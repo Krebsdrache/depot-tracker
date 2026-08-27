@@ -1,0 +1,2 @@
+trade_id,coin,datum,menge,verkaufspreis_eur,preis_geschaetzt,preis_quelle,commission,commission_asset,gebuehr_eur,gebuehr_kurs_eur,gebuehr_geschaetzt,gebuehr_quelle
+200001,ETH,2025-08-10T12:00:00+00:00,0.3,3200.0,0,demo,0.0,,1.50,,0,demo

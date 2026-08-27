@@ -23,6 +23,8 @@ credentials.json
 # Lokale Depot-Daten (später: Exporte, Cache, Datenbank)
 data/*
 !data/.gitkeep
+# Private Preis-Zonen-Strategie (nur lokal; Vorlage: config/preis_zonen.example.json)
+data/preis_zonen.json
 
 # IDE & OS
 .idea/

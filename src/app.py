@@ -1439,6 +1439,16 @@ def _render_price_zones(
     """Preis-Zonen: Kategorie-Kreisdiagramm + EUR/USD-Tabellen."""
     st.subheader("Preis-Zonen")
 
+    if not price_zones_mod.has_price_zone_config():
+        st.info(
+            "Keine lokale Preis-Zonen-Konfiguration (`data/preis_zonen.json`). "
+            "Kopiere `config/preis_zonen.example.json` nach `data/preis_zonen.json` "
+            "und trage deine privaten Schwellenwerte ein. "
+            "Die Datei wird nicht ins Git übernommen — alle anderen Bereiche der App "
+            "funktionieren ohne sie."
+        )
+        return
+
     if result is not None and result.positions:
         category_view = st.radio(
             "Kategorie-Ansicht",
@@ -1809,25 +1819,22 @@ def _render_was_wenn_tab(result: PortfolioResult) -> None:
                     _sync_what_if_ath_levels_from_global()
                     st.rerun()
 
+        st.session_state.setdefault("what_if_ath_premium_pct", 0.0)
         st.slider(
             "Premium über ATH (%) — alle Coins gleich setzen",
             min_value=0.0,
             max_value=300.0,
-            value=min(
-                300.0,
-                float(st.session_state.get("what_if_ath_premium_pct", 0.0)),
-            ),
             step=1.0,
             key="what_if_ath_premium_pct",
             on_change=_sync_what_if_ath_levels_from_global,
             help="Setzt alle Coin-Regler auf 100 + X (ATH + X %). Max. +300 % = Regler 400.",
         )
 
+    st.session_state.setdefault("what_if_global_pct", 0.0)
     global_pct = st.slider(
         "Kursänderung alle Coins (%)",
         min_value=-80.0,
         max_value=200.0,
-        value=float(st.session_state.get("what_if_global_pct", 0.0)),
         step=1.0,
         key="what_if_global_pct",
         on_change=_clear_what_if_coin_overrides,
@@ -1863,7 +1870,8 @@ def _render_was_wenn_tab(result: PortfolioResult) -> None:
                 today = pos.current_price_eur or 0.0
                 ath_val = ath_bases[coin]
                 max_val = what_if_mod.ath_ceiling_eur(ath_val)
-                level_val = float(st.session_state.get(f"what_if_ath_level_{coin}", 100.0))
+                st.session_state.setdefault(f"what_if_ath_level_{coin}", 100.0)
+                level_val = float(st.session_state[f"what_if_ath_level_{coin}"])
                 target_val = what_if_mod.target_from_ath_level(today, ath_val, level_val)
                 if coin in ath_prices:
                     basis_hint = (
@@ -1876,18 +1884,17 @@ def _render_was_wenn_tab(result: PortfolioResult) -> None:
                     f"{coin} — Ziel (0 = heute, 100 = ATH, 400 = ATH +300 %)",
                     min_value=0.0,
                     max_value=what_if_mod.ATH_LEVEL_MAX,
-                    value=level_val,
                     step=1.0,
                     key=f"what_if_ath_level_{coin}",
                     help=basis_hint,
                 )
         else:
             for pos in scenario_positions:
+                st.session_state.setdefault(f"what_if_coin_{pos.coin}", float(global_pct))
                 override = st.slider(
                     f"{pos.coin} (global {global_pct:+.0f} %)",
                     min_value=-80.0,
                     max_value=200.0,
-                    value=float(global_pct),
                     step=1.0,
                     key=f"what_if_coin_{pos.coin}",
                 )

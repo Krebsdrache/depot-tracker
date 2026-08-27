@@ -1,0 +1,58 @@
+{
+  "day": "DEMO_DAY",
+  "loaded_at": "2026-08-27T12:00:00+02:00",
+  "total_value_eur": 33200.0,
+  "message": "Demo-Depot geladen (fiktive Daten für Screenshots).",
+  "positions": [
+    {
+      "coin": "BTC",
+      "quantity": 0.15,
+      "current_price_eur": 92000.0,
+      "current_value_eur": 13800.0,
+      "avg_entry_price_eur": 57066.67,
+      "entry_known": true,
+      "profit_loss_eur": 5239.99,
+      "profit_loss_pct": 61.21
+    },
+    {
+      "coin": "ETH",
+      "quantity": 2.2,
+      "current_price_eur": 3400.0,
+      "current_value_eur": 7480.0,
+      "avg_entry_price_eur": 2363.64,
+      "entry_known": true,
+      "profit_loss_eur": 2280.0,
+      "profit_loss_pct": 43.84
+    },
+    {
+      "coin": "SOL",
+      "quantity": 40.0,
+      "current_price_eur": 145.0,
+      "current_value_eur": 5800.0,
+      "avg_entry_price_eur": 85.0,
+      "entry_known": true,
+      "profit_loss_eur": 2400.0,
+      "profit_loss_pct": 70.59
+    },
+    {
+      "coin": "LINK",
+      "quantity": 200.0,
+      "current_price_eur": 18.0,
+      "current_value_eur": 3600.0,
+      "avg_entry_price_eur": 11.5,
+      "entry_known": true,
+      "profit_loss_eur": 1300.0,
+      "profit_loss_pct": 56.52
+    },
+    {
+      "coin": "EUR",
+      "quantity": 2520.0,
+      "current_price_eur": 1.0,
+      "current_value_eur": 2520.0,
+      "avg_entry_price_eur": null,
+      "entry_known": false,
+      "profit_loss_eur": null,
+      "profit_loss_pct": null
+    }
+  ]
+}
