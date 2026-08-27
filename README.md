@@ -18,7 +18,13 @@ Lokales **Streamlit-Dashboard** zur Analyse eines **Binance Spot-Depots** — nu
 |-----------------|-------------------|-------------------|
 | ![Depot-Übersicht](docs/depot.png) | ![Depot-Entwicklung](docs/entwicklung.png) | ![Steuer-Haltefrist](docs/steuer.png) |
 
-*(Demo-Daten, keine echten Kontostände.)*
+| Was-wäre-wenn? | Handelsgebühren | Kapitalfluss |
+|----------------|-----------------|--------------|
+| ![Was-wäre-wenn?](docs/was_wenn.png) | ![Handelsgebühren](docs/gebuehren.png) | ![Kapitalfluss](docs/kapitalfluss.png) |
+
+Detailansicht der Depot-Tabelle: ![Depot-Detail](docs/depot_detail.png)
+
+*(Demo-Daten, keine echten Kontostände. Kein Preis-Zonen-Tab.)*
 
 ## Technischer Aufbau
 
