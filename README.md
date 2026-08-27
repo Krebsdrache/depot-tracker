@@ -25,11 +25,7 @@ BINANCE_API_KEY=dein_api_key
 BINANCE_API_SECRET=dein_api_secret
 ```
 
-Die Datei wird nicht ins Git übernommen (siehe `.gitignore`). **Keys nur rotieren**, falls du die `.env` jemals per Chat oder E-Mail verschickt hast — im Repository liegen keine Keys.
-
-## Vor dem Push (öffentliches Repo)
-
-Kurz **`git status`** prüfen: `.env` und `data/` dürfen nicht staged sein (stehen in `.gitignore`).
+Die Datei wird nicht ins Git übernommen (siehe `.gitignore`). Trage echte Keys nur lokal ein — nie ins Repository committen.
 
 ## App starten
 
